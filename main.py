@@ -47,10 +47,12 @@ def refreshLine():
             pl = loc1
         pl = (pl[0],pl[1]+int(op_size/2)+5)
         ph = (ph[0],ph[1]-int(op_size/2)-5)
-        if pl[0]<ph[0]:
+        if pl[0]-ph[0]<-op_size:
             pl = (pl[0]+int(op_size/2)+5,pl[1])
-        else:
+        elif pl[0]-ph[0]>op_size:
             pl = (pl[0]-int(op_size/2)-5,pl[1])
+        else:
+            pl = pl
         ll = c.create_line(pl+ph)
         lineitem.append(ll)
 def refreshText():
@@ -61,15 +63,16 @@ def refreshText():
     for ic in icon:
         loc = ic[2]
         txt = ic[3]
-        loc = (loc[0]+int(op_size/2)+len(txt)*3+5,loc[1]+int(op_size/2)-5)
-        t = c.create_text(loc,text=txt)
+        txt = txt+(40-len(txt))*' '
+        loc = (loc[0]+int(op_size/2)+len(txt)*4+47,loc[1]+int(op_size/2)-5)
+        t = c.create_text(loc,text=txt,font="time 15")
         textitem.append(t)
     
         
         
-        
+move_item = None
 def event_l_down(e):
-    global idcnt,selectindex
+    global idcnt,selectindex,move_item
     print(e.x,e.y)
     item = find_item(e.x,e.y)
     if item == None:
@@ -77,11 +80,14 @@ def event_l_down(e):
         icon.append([idcnt,iconname[selectindex],(e.x,e.y),'',ic])
         idcnt+=1
     else:
+        move_item = item
         print(item)
     
     print("down")
 def event_l_up(e):
     print(e.x,e.y)
+    global move_item
+    move_item = None
     print("up")
 
 def event_m_down(e):
@@ -111,24 +117,37 @@ def event_r_down(e):
     r_item_down = find_item(e.x,e.y)
     down_point = (e.x,e.y)
     temp_line = c.create_line(down_point+down_point)
-    
-    
 def event_r_up(e):
     print(e.x,e.y)
     global r_item_down,down_point,temp_line,line
     r_item_up = find_item(e.x,e.y)
-    if r_item_down!=None and r_item_up!=None:
-        line.append((r_item_down[0],r_item_up[0]))
+    if r_item_down!=None and r_item_up!=None and r_item_down!=r_item_up:
+        id1 = r_item_down[0]
+        id2 = r_item_up[0]
+        if (id1,id2) in line:
+            line.remove((id1,id2))
+        elif (id2,id1) in line:
+            line.remove((id2,id1))
+        else:
+            line.append((id1,id2))
         refreshLine()
     r_item_down = None
     down_point = None
     c.delete(temp_line)
     temp_line = None
+
 def event_motion(e):
-    global temp_line,down_point
+    global temp_line,down_point,move_item
     c.coords(cursor,(e.x,e.y))
     if down_point!=None:
         c.coords(temp_line,down_point+(e.x,e.y))
+        return
+    if move_item!=None:
+        it = move_item[4]
+        c.coords(it,(e.x,e.y))
+        move_item[2] = (e.x,e.y)
+        refreshLine()
+        refreshText()
         return
 
 
