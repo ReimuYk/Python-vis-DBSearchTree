@@ -14,11 +14,12 @@ iconname = ['dicar.jpg','njoin.jpg']
 select=None
 selectindex=-1
 lineitem = []
+textitem = []
 
 def find_item(x,y):
     for item in icon:
         location = item[2]
-        if abs(x-location[0])<op_size/2 and abs(y-location[1])<op_size/2:
+        if abs(x-location[0])<op_size and abs(y-location[1])<op_size:
             return item
     return None
 def refreshLine():
@@ -44,10 +45,26 @@ def refreshLine():
         else:
             ph = loc2
             pl = loc1
-        pl = (pl[0],pl[1]+int(op_size/2))
-        ph = (ph[0],ph[1]-int(op_size/2))
+        pl = (pl[0],pl[1]+int(op_size/2)+5)
+        ph = (ph[0],ph[1]-int(op_size/2)-5)
+        if pl[0]<ph[0]:
+            pl = (pl[0]+int(op_size/2)+5,pl[1])
+        else:
+            pl = (pl[0]-int(op_size/2)-5,pl[1])
         ll = c.create_line(pl+ph)
         lineitem.append(ll)
+def refreshText():
+    global icon,textitem,icon
+    for t in textitem:
+        c.delete(t)
+    textitem=[]
+    for ic in icon:
+        loc = ic[2]
+        txt = ic[3]
+        loc = (loc[0]+int(op_size/2)+len(txt)*3+5,loc[1]+int(op_size/2)-5)
+        t = c.create_text(loc,text=txt)
+        textitem.append(t)
+    
         
         
         
@@ -57,7 +74,7 @@ def event_l_down(e):
     item = find_item(e.x,e.y)
     if item == None:
         ic = c.create_image(e.x,e.y,image=select)
-        icon.append((idcnt,iconname[selectindex],(e.x,e.y),'',ic))
+        icon.append([idcnt,iconname[selectindex],(e.x,e.y),'',ic])
         idcnt+=1
     else:
         print(item)
@@ -66,6 +83,24 @@ def event_l_down(e):
 def event_l_up(e):
     print(e.x,e.y)
     print("up")
+
+def event_m_down(e):
+    print(e.x,e.y)
+    item = find_item(e.x,e.y)
+    if item == None:
+        return
+    loc = item[2]
+    tv = StringVar()
+    tv.set(item[3])
+    en = Entry(root,textvariable=tv)
+    en.place(x=loc[0],y=loc[1])
+    def settext(e):
+        item[3] = tv.get()
+    en.bind("<Key>",settext)
+    def packforget(e):
+        en.place_forget()
+        refreshText()
+    en.bind("<Return>",packforget)
 
 r_item_down = None
 down_point = None
@@ -130,6 +165,7 @@ selectindex = 0
 c = Canvas(root,width=800,height=800,bg='white')
 c.bind("<ButtonPress-1>",event_l_down)
 c.bind("<ButtonRelease-1>",event_l_up)
+c.bind("<ButtonPress-2>",event_m_down)
 c.bind("<ButtonPress-3>",event_r_down)
 c.bind("<ButtonRelease-3>",event_r_up)
 c.bind("<Motion>",event_motion)
