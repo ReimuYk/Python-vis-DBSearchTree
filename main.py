@@ -11,10 +11,13 @@ op_size = 40
 iconlist=[]
 iconname = ['dicar.jpg','njoin.jpg']
 
+root=Tk()
 select=None
 selectindex=-1
 lineitem = []
 textitem = []
+tablename = StringVar()
+tablename.set("tablename")
 
 def find_item(x,y):
     for item in icon:
@@ -61,6 +64,9 @@ def refreshText():
         c.delete(t)
     textitem=[]
     for ic in icon:
+        if ic[1]==None:
+            c.itemconfig(ic[4],text=ic[3])
+            continue
         loc = ic[2]
         txt = ic[3]
         txt = txt+(40-len(txt))*' '
@@ -76,9 +82,14 @@ def event_l_down(e):
     print(e.x,e.y)
     item = find_item(e.x,e.y)
     if item == None:
-        ic = c.create_image(e.x,e.y,image=select)
-        icon.append([idcnt,iconname[selectindex],(e.x,e.y),'',ic])
+        if selectindex>=0:
+            ic = c.create_image(e.x,e.y,image=select)
+            icon.append([idcnt,iconname[selectindex],(e.x,e.y),'',ic])
+        else:
+            ic = c.create_text(e.x,e.y,text=select.get(),font="time 25 bold")
+            icon.append([idcnt,None,(e.x,e.y),select.get(),ic])
         idcnt+=1
+        
     else:
         move_item = item
         print(item)
@@ -169,9 +180,16 @@ def event_key2(e):
     select = iconlist[1]
     selectindex = 1
     cursor = c.create_image(0,0,image=select)
-    
+def event_key0(e):
+    global cursor,select,selectindex,tablename
+    c.delete(cursor)
+    select = tablename
+    selectindex = -1
+    cursor = c.create_text(0,0,text=select.get(),font="time 25 bold")
+def test(e):
+    print()
 
-root = Tk()
+
 for name in iconname:
     image = Image.open(name)
     image = image.resize((op_size,op_size))
@@ -192,10 +210,65 @@ c.bind("<Enter>",event_movein)
 c.bind("<Leave>",event_moveout)
 root.bind("<Key-1>",event_key1)
 root.bind("<Key-2>",event_key2)
+root.bind("<Key-0>",event_key0)
 
 c.pack()
+
+##te = Entry(root,textvariable=tablename)
+##te.place(x=600,y=700)
+##def foc(e):
+##    root.focus_set()
+##    event_key0(None)
+##te.bind("<Return>",foc)
 
 
 cursor = c.create_image(0,0,image=select)
 
+filename = StringVar()
+filename.set("000.txt")
+def save():
+    f = open(filename.get(),"w")
+    f.write(str(icon))
+    f.write("\t")
+    f.write(str(line))
+    f.write('\t')
+    f.write(str(idcnt))
+    f.close()
+def load():
+    global icon,line,iconname,idcnt
+    clear()
+    try:
+        f = open(filename.get(),"r")
+        content = f.readline()
+        content = content.split('\t')
+        icon = eval(content[0])
+        line = eval(content[1])
+        idcnt = eval(content[2])
+        for ic in icon:
+            if ic[1]==None:
+                icnum = c.create_text(ic[2][0],ic[2][1],text=ic[3],font="time 25 bold")
+                ic[4] = icnum
+            else:
+                index = iconname.index(ic[1])
+                im = iconlist[index]
+                icnum = c.create_image(ic[2][0],ic[2][1],image=im)
+                ic[4] = icnum
+        refreshLine()
+        refreshText()
+        f.close()
+    except Exception as e:
+        print(e)
+def clear():
+    global icon,line
+    for ic in icon:
+        c.delete(ic[4])
+    icon = []
+    line = []
+    refreshLine()
+    refreshText()
+
+Button(root,text="clear",command=clear).place(x=300,y=700)
+Entry(root,textvariable=filename).place(x=400,y=700)
+Button(root,text="save",command=save).place(x=600,y=700)
+Button(root,text="load",command=load).place(x=650,y=700)
 root.mainloop()
