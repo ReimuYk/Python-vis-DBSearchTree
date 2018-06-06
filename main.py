@@ -9,7 +9,7 @@ line = []
 
 op_size = 40
 iconlist=[]
-iconname = ['dicar.jpg','njoin.jpg']
+iconname = ['dicar.jpg','njoin.jpg','proj.jpg','sigma.jpg']
 
 root=Tk()
 select=None
@@ -175,10 +175,24 @@ def event_key1(e):
     cursor = c.create_image(0,0,image=select)
 def event_key2(e):
     global cursor,select,selectindex
-    print("key 1 press")
+    print("key 2 press")
     c.delete(cursor)
     select = iconlist[1]
     selectindex = 1
+    cursor = c.create_image(0,0,image=select)
+def event_key3(e):
+    global cursor,select,selectindex
+    print("key 3 press")
+    c.delete(cursor)
+    select = iconlist[2]
+    selectindex = 2
+    cursor = c.create_image(0,0,image=select)
+def event_key4(e):
+    global cursor,select,selectindex
+    print("key 4 press")
+    c.delete(cursor)
+    select = iconlist[3]
+    selectindex = 3
     cursor = c.create_image(0,0,image=select)
 def event_key0(e):
     global cursor,select,selectindex,tablename
@@ -210,6 +224,8 @@ c.bind("<Enter>",event_movein)
 c.bind("<Leave>",event_moveout)
 root.bind("<Key-1>",event_key1)
 root.bind("<Key-2>",event_key2)
+root.bind("<Key-3>",event_key3)
+root.bind("<Key-4>",event_key4)
 root.bind("<Key-0>",event_key0)
 
 c.pack()
@@ -227,7 +243,7 @@ cursor = c.create_image(0,0,image=select)
 filename = StringVar()
 filename.set("000.txt")
 def save():
-    f = open(filename.get(),"w")
+    f = open('saved/'+filename.get(),"w")
     f.write(str(icon))
     f.write("\t")
     f.write(str(line))
@@ -238,7 +254,7 @@ def load():
     global icon,line,iconname,idcnt
     clear()
     try:
-        f = open(filename.get(),"r")
+        f = open('saved/'+filename.get(),"r")
         content = f.readline()
         content = content.split('\t')
         icon = eval(content[0])
