@@ -56,7 +56,7 @@ def refreshLine():
             pl = (pl[0]-int(op_size/2)-5,pl[1])
         else:
             pl = pl
-        ll = c.create_line(pl+ph)
+        ll = c.create_line(pl+ph,width=2)
         lineitem.append(ll)
 def refreshText():
     global icon,textitem,icon
